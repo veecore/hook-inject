@@ -92,22 +92,37 @@ pub fn download_devkit<P: AsRef<Path>>(
     fs::create_dir_all(out_dir)
         .map_err(|e| BuildError::new(format!("failed to create devkit dir: {e}")))?;
 
-    let archive_ext = if platform.starts_with("windows-") {
-        "zip"
+    // Windows devkits have shipped as both tar.xz and zip across releases.
+    let extensions: &[&str] = if platform.starts_with("windows-") {
+        &["tar.xz", "zip"]
     } else {
-        "tar.xz"
+        &["tar.xz"]
     };
-    let filename = format!("frida-core-devkit-{version}-{platform}.{archive_ext}");
-    let archive = out_dir.join(&filename);
-    let url = format!("https://github.com/frida/frida/releases/download/{version}/{filename}");
 
-    if archive_ext == "zip" {
-        let dl = format!(
-            "Invoke-WebRequest -Uri '{}' -OutFile '{}'",
-            url,
-            archive.display()
-        );
-        run(Command::new("powershell").args(["-NoProfile", "-Command", &dl]))?;
+    let mut last_error = None;
+    for ext in extensions {
+        let filename = format!("frida-core-devkit-{version}-{platform}.{ext}");
+        let archive = out_dir.join(&filename);
+        let url = format!("https://github.com/frida/frida/releases/download/{version}/{filename}");
+
+        let result = download_and_extract(&url, &archive, out_dir, ext);
+        match result {
+            Ok(()) => return Ok(out_dir.to_path_buf()),
+            Err(err) => last_error = Some(err),
+        }
+    }
+
+    Err(last_error
+        .unwrap_or_else(|| BuildError::new("failed to download devkit archive (no candidates)")))
+}
+
+fn download_and_extract(url: &str, archive: &Path, out_dir: &Path, ext: &str) -> Result<()> {
+    run(Command::new("curl")
+        .args(["-fL", "-o"])
+        .arg(archive)
+        .arg(url))?;
+
+    if ext == "zip" {
         let cmd = format!(
             "Expand-Archive -Force -Path '{}' -DestinationPath '{}'",
             archive.display(),
@@ -115,18 +130,14 @@ pub fn download_devkit<P: AsRef<Path>>(
         );
         run(Command::new("powershell").args(["-NoProfile", "-Command", &cmd]))?;
     } else {
-        run(Command::new("curl")
-            .args(["-fL", "-o"])
-            .arg(&archive)
-            .arg(&url))?;
         run(Command::new("tar")
             .arg("-xf")
-            .arg(&archive)
+            .arg(archive)
             .arg("-C")
             .arg(out_dir))?;
     }
 
-    Ok(out_dir.to_path_buf())
+    Ok(())
 }
 
 fn run(cmd: &mut Command) -> Result<()> {

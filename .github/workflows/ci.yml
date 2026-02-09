@@ -37,5 +37,9 @@ jobs:
           sudo /usr/sbin/DevToolsSecurity -enable
           sudo /usr/sbin/dseditgroup -o edit -a "$USER" -t user _developer || true
           sudo /usr/bin/security authorizationdb write system.privilege.taskport allow
+      - name: Run workspace tests (macOS)
+        if: matrix.os == 'macos-latest'
+        run: sudo -E cargo test --workspace --all-targets -- --nocapture
       - name: Run workspace tests
+        if: matrix.os != 'macos-latest'
         run: cargo test --workspace --all-targets -- --nocapture

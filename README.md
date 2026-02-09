@@ -20,7 +20,6 @@ let library = Library::from_path("/path/to/libagent.so")?;
 let injected = inject_process(process, library)?;
 
 injected.uninject()?;
-# Ok::<(), hook_inject::Error>(())
 ```
 
 Launch + inject:
@@ -36,7 +35,6 @@ let library = Library::from_path("/path/to/libagent.so")?;
 let injected = inject_program(program, library)?;
 
 injected.uninject()?;
-# Ok::<(), hook_inject::Error>(())
 ```
 
 Spawn suspended (manual resume):
@@ -46,7 +44,6 @@ use hook_inject::{spawn, Program};
 
 let suspended = spawn(Program::new("/usr/bin/true"))?;
 let _child = suspended.resume()?;
-# Ok::<(), hook_inject::Error>(())
 ```
 
 Spawn + inject with output capture:
@@ -67,7 +64,6 @@ let mut stdout = String::new();
 if let Some(out) = child.stdout.as_mut() {
     out.read_to_string(&mut stdout)?;
 }
-# Ok::<(), hook_inject::Error>(())
 ```
 
 Inject from an in-memory blob:
@@ -79,7 +75,6 @@ let process = unsafe { Process::from_pid_unchecked(1234) };
 let blob = Library::from_bytes(vec![1, 2, 3])?;
 let injected = inject_process(process, blob)?;
 injected.uninject()?;
-# Ok::<(), hook_inject::Error>(())
 ```
 
 ## Building agent libraries
@@ -90,7 +85,6 @@ injected.uninject()?;
 use hook_inject::Library;
 
 let lib = Library::from_path("/path/to/libagent.so")?;
-# Ok::<(), hook_inject::Error>(())
 ```
 
 ### Discover a Rust cdylib
@@ -99,7 +93,6 @@ let lib = Library::from_path("/path/to/libagent.so")?;
 use hook_inject::Library;
 
 let lib = Library::from_crate("./agent-crate")?;
-# Ok::<(), hook_inject::Error>(())
 ```
 
 If the cdylib is missing, `from_crate` runs `cargo build` once and retries.

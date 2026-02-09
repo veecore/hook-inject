@@ -6,11 +6,6 @@ fn inject_fixture_into_target() {
 
     use hook_inject::{Library, Process, inject_process};
 
-    if std::env::var_os("HOOK_INJECT_SKIP_FRIDA_BUILD").is_some() {
-        eprintln!("skipping inject smoke test (stub build)");
-        return;
-    }
-
     if !unix_socket_available() {
         eprintln!("skipping inject smoke test (unix socket bind denied)");
         return;
@@ -73,6 +68,7 @@ fn inject_fixture_into_target() {
     assert_eq!(contents, b"ok");
 
     let _ = child.kill();
+    let _ = child.wait();
 }
 
 #[cfg(unix)]

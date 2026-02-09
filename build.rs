@@ -1,9 +1,7 @@
 use std::env;
 use std::path::{Path, PathBuf};
 
-use hook_inject_build::{
-    download_devkit, probe_pkg, resolve_devkit_platform, resolve_devkit_versions,
-};
+use hook_inject_build::{download_devkit, resolve_devkit_platform, resolve_devkit_versions};
 
 // === Configuration ===
 const DEFAULT_DEVKIT_VERSION: &str = "17.6.2";
@@ -16,22 +14,12 @@ fn main() {
     println!("cargo:rerun-if-changed=build.rs");
     println!("cargo:rerun-if-changed=native/frida_shim.c");
     println!("cargo:rerun-if-changed=native/frida_shim.h");
-    println!("cargo:rerun-if-changed=native/frida_shim_stub.c");
-    println!("cargo:rerun-if-env-changed=HOOK_INJECT_SKIP_FRIDA_BUILD");
     println!("cargo:rerun-if-env-changed=FRIDA_CORE_DEVKIT_DIR");
     println!("cargo:rerun-if-env-changed=HOOK_INJECT_DEVKIT_VERSION");
     println!("cargo:rerun-if-env-changed=HOOK_INJECT_DEVKIT_PLATFORM");
     println!("cargo:rerun-if-env-changed=CARGO_TARGET_DIR");
 
     let manifest_dir = PathBuf::from(env::var("CARGO_MANIFEST_DIR").unwrap());
-
-    // CI escape hatch: build a stub shim without frida-core or Meson/Ninja.
-    if env::var_os("HOOK_INJECT_SKIP_FRIDA_BUILD").is_some() {
-        cc::Build::new()
-            .file(manifest_dir.join("native/frida_shim_stub.c"))
-            .compile("hook_frida_shim_stub");
-        return;
-    }
 
     // Allow power users to point at a prebuilt devkit directly.
     if let Some(devkit_dir) = env::var_os("FRIDA_CORE_DEVKIT_DIR") {
@@ -118,10 +106,6 @@ fn build_with_devkit(manifest_dir: &Path, devkit_dir: &Path) {
 
     emit_devkit_watch(&lib_dir, &header_dir);
 
-    let glib = probe_pkg("glib-2.0");
-    let gobject = probe_pkg("gobject-2.0");
-    let json_glib = probe_pkg("json-glib-1.0");
-
     println!("cargo:rustc-link-search=native={}", lib_dir.display());
     println!(
         "cargo:rustc-link-lib={}={}",
@@ -130,12 +114,10 @@ fn build_with_devkit(manifest_dir: &Path, devkit_dir: &Path) {
     );
     link_system_libs(is_static);
 
+    // frida-core.h is an amalgam, so no extra include paths are required here.
     cc::Build::new()
         .file(manifest_dir.join("native/frida_shim.c"))
         .include(header_dir)
-        .includes(&glib.include_paths)
-        .includes(&gobject.include_paths)
-        .includes(&json_glib.include_paths)
         .compile("hook_frida_shim");
 }
 
@@ -206,43 +188,29 @@ fn link_system_libs(is_static: bool) {
 
 // === Devkit layout ===
 fn find_devkit_dir(dir: &Path) -> Option<(PathBuf, String, PathBuf, bool)> {
-    // A devkit directory must contain a header and at least one library.
-    let mut header_dir = None;
-    let mut lib_dir = None;
-    let mut lib_name = None;
-    let mut is_static = false;
-
+    // A devkit directory must contain the amalgamated header and at least one library.
     let header = dir.join("frida-core.h");
-    let dylib = dir.join("libfrida-core.so");
-    let dylib_mac = dir.join("libfrida-core.dylib");
-    let dll = dir.join("frida-core.dll");
-    let dll_lib = dir.join("frida-core.lib");
-    let static_lib = dir.join("libfrida-core.a");
-
-    if header.exists() {
-        header_dir = Some(dir.to_path_buf());
+    if !header.exists() {
+        return None;
     }
 
-    if dylib.exists() {
-        lib_dir = Some(dir.to_path_buf());
-        lib_name = Some("frida-core".to_string());
-    } else if dylib_mac.exists() {
-        lib_dir = Some(dir.to_path_buf());
-        lib_name = Some("frida-core".to_string());
-    } else if dll_lib.exists() {
-        lib_dir = Some(dir.to_path_buf());
-        lib_name = Some("frida-core".to_string());
-    } else if dll.exists() {
-        lib_dir = Some(dir.to_path_buf());
-        lib_name = Some("frida-core".to_string());
-    } else if static_lib.exists() {
-        lib_dir = Some(dir.to_path_buf());
-        lib_name = Some("frida-core".to_string());
-        is_static = true;
+    let candidates = [
+        ("libfrida-core.a", true),
+        ("libfrida-core.so", false),
+        ("libfrida-core.dylib", false),
+        ("frida-core.lib", false),
+    ];
+
+    for (name, is_static) in candidates {
+        if dir.join(name).exists() {
+            return Some((
+                dir.to_path_buf(),
+                "frida-core".to_string(),
+                dir.to_path_buf(),
+                is_static,
+            ));
+        }
     }
 
-    match (lib_dir, lib_name, header_dir) {
-        (Some(l), Some(n), Some(h)) => Some((l, n, h, is_static)),
-        _ => None,
-    }
+    None
 }

@@ -157,8 +157,8 @@ impl FridaBackend {
         let entrypoint = library.entrypoint();
         let data = library.data();
 
-        let argv_storage = build_argv(&spec, &program)?;
-        let envp_storage = build_envp(&spec)?;
+        let argv_storage = build_argv(spec, &program)?;
+        let envp_storage = build_envp(spec)?;
         let cwd = spec
             .command()
             .get_current_dir()
@@ -269,8 +269,8 @@ impl FridaBackend {
         let program_path = spec.command().get_program();
         let program = os_str_to_cstring(program_path, "program path")?;
 
-        let argv_storage = build_argv(&spec, &program)?;
-        let envp_storage = build_envp(&spec)?;
+        let argv_storage = build_argv(spec, &program)?;
+        let envp_storage = build_envp(spec)?;
         let cwd = spec
             .command()
             .get_current_dir()
@@ -422,6 +422,7 @@ const HOOK_FRIDA_ERROR_INVALID_ARGUMENT: c_int = 1;
 const HOOK_FRIDA_ERROR_NOT_SUPPORTED: c_int = 2;
 const HOOK_FRIDA_ERROR_PERMISSION_DENIED: c_int = 3;
 const HOOK_FRIDA_ERROR_PROCESS_NOT_FOUND: c_int = 4;
+#[allow(dead_code)]
 const HOOK_FRIDA_ERROR_RUNTIME: c_int = 5;
 
 fn map_frida_error(kind: c_int, msg: String, pid: Option<i32>) -> Error {
@@ -437,7 +438,7 @@ fn map_frida_error(kind: c_int, msg: String, pid: Option<i32>) -> Error {
                 Error::runtime(msg)
             }
         }
-        HOOK_FRIDA_ERROR_RUNTIME | _ => Error::runtime(msg),
+        _ => Error::runtime(msg),
     }
 }
 

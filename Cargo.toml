@@ -33,4 +33,4 @@ windows-sys = { version = "0.61", features = ["Win32_Foundation", "Win32_System_
 
 [build-dependencies]
 cc = "1.0"
-hook-inject-build = { path = "hook-inject-build", features = ["download-devkit", "build-utils"] }
+hook-inject-build = { path = "hook-inject-build", features = ["download-devkit"] }

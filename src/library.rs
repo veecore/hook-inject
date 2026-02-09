@@ -84,7 +84,7 @@ impl Library {
                 Error::invalid_input(format_args!("Failed to read library: {}", err))
             })?
         } else {
-            hook_inject_build::build_cdylib(&crate_path).map_err(|err| {
+            hook_inject_build::build_cdylib(crate_path).map_err(|err| {
                 Error::invalid_input(format_args!("Failed to build library: {err}"))
             })?
         };

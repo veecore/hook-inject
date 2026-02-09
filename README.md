@@ -172,12 +172,6 @@ Common install commands:
 cargo test --workspace
 ```
 
-### CI stub build (compiles without Frida deps)
-
-```bash
-HOOK_INJECT_SKIP_FRIDA_BUILD=1 cargo test --workspace
-```
-
 ### Injection smoke test (Linux)
 
 ```bash

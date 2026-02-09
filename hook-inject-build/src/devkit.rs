@@ -63,14 +63,12 @@ pub fn resolve_devkit_versions(default: &str, supported: &[&str]) -> (Vec<String
     {
         let only_default =
             supported.len() <= 1 && supported.first().map(|v| *v == default).unwrap_or(true);
-        if !only_default {
-            if let Some(version) = detect_frida_version() {
-                if supported.iter().any(|&v| v == version)
-                    && !versions.iter().any(|v| v == &version)
-                {
-                    versions.push(version);
-                }
-            }
+        if !only_default
+            && let Some(version) = detect_frida_version()
+            && supported.iter().any(|&v| v == version)
+            && !versions.iter().any(|v| v == &version)
+        {
+            versions.push(version);
         }
     }
 

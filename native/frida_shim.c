@@ -1,6 +1,6 @@
 #include "frida_shim.h"
+// frida-core.h is an amalgam that includes GLib/GObject types.
 #include <frida-core.h>
-#include <glib.h>
 #include <stdlib.h>
 #include <string.h>
 

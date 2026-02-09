@@ -1,0 +1,33 @@
+name: CI (Self-Hosted)
+
+on:
+  workflow_dispatch:
+    inputs:
+      devkit_dir:
+        description: "Path to frida-core devkit on the runner"
+        required: false
+        default: ""
+
+jobs:
+  integration-macos:
+    name: Integration (macOS self-hosted)
+    runs-on: [self-hosted, macos]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Configure devkit path
+        run: |
+          if [ -n "${{ inputs.devkit_dir }}" ]; then
+            echo "FRIDA_CORE_DEVKIT_DIR=${{ inputs.devkit_dir }}" >> "$GITHUB_ENV"
+          fi
+          if [ -z "${FRIDA_CORE_DEVKIT_DIR:-}" ]; then
+            echo "FRIDA_CORE_DEVKIT_DIR is required for macOS integration tests."
+            exit 1
+          fi
+      - name: Enable task_for_pid permissions
+        run: |
+          sudo /usr/sbin/DevToolsSecurity -enable
+          sudo /usr/sbin/dseditgroup -o edit -a "$USER" -t user _developer || true
+          sudo /usr/bin/security authorizationdb write system.privilege.taskport allow
+      - name: Run workspace tests
+        run: sudo -E FRIDA_CORE_DEVKIT_DIR="$FRIDA_CORE_DEVKIT_DIR" cargo test --workspace --all-targets -- --nocapture

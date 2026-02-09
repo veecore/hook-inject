@@ -1,0 +1,11 @@
+[package]
+name = "hook-inject-fixture-agent"
+version = "0.1.0"
+edition = "2024"
+
+[lib]
+crate-type = ["cdylib"]
+
+[package.metadata.hook-inject]
+entrypoint = "hook_inject_entry"
+data = "fixture"

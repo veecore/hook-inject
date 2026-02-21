@@ -119,7 +119,7 @@ export FRIDA_CORE_DEVKIT_DIR=vendor/frida-core/build-hook-inject/src/devkit
 The build script downloads into `target/frida-devkit/<version>/<platform>` by
 default. You can override its behavior with:
 
-- `HOOK_INJECT_DEVKIT_VERSION` (default `17.6.2`)
+- `HOOK_INJECT_DEVKIT_VERSION` (default `17.7.3`)
 - `HOOK_INJECT_DEVKIT_PLATFORM` (e.g., `linux-x86_64`, `macos-arm64`)
 
 ## macOS permissions

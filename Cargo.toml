@@ -3,6 +3,9 @@ name = "hook-inject"
 version = "0.1.0"
 edition = "2024"
 description = "Cross-platform process injection via Frida Core."
+documentation = "https://docs.rs/hook-inject"
+homepage = "https://github.com/veecore/hook-inject"
+repository = "https://github.com/veecore/hook-inject"
 readme = "README.md"
 license = "MIT OR Apache-2.0"
 authors = ["Victor <victorayo206@gmail.com>"]
@@ -23,7 +26,7 @@ targets = [
 members = ["fixtures/agent", "fixtures/target", "hook-inject-build"]
 
 [dependencies]
-hook-inject-build = { path = "hook-inject-build", default-features = false }
+hook-inject-build = { version = "0.1.0", path = "hook-inject-build", default-features = false }
 
 [target.'cfg(unix)'.dependencies]
 libc = "0.2"
@@ -33,4 +36,4 @@ windows-sys = { version = "0.61", features = ["Win32_Foundation", "Win32_System_
 
 [build-dependencies]
 cc = "1.0"
-hook-inject-build = { path = "hook-inject-build", features = ["download-devkit"] }
+hook-inject-build = { version = "0.1.0", path = "hook-inject-build", features = ["download-devkit"] }

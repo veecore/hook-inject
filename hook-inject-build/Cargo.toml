@@ -2,6 +2,15 @@
 name = "hook-inject-build"
 version = "0.1.0"
 edition = "2024"
+description = "Build-time helpers for hook-inject."
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/veecore/hook-inject"
+homepage = "https://github.com/veecore/hook-inject"
+documentation = "https://docs.rs/hook-inject-build"
+readme = "README.md"
+authors = ["Victor <victorayo206@gmail.com>"]
+keywords = ["frida", "build", "cdylib", "metadata"]
+categories = ["development-tools::build-utils"]
 
 [features]
 default = ["auto-detect"]

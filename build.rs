@@ -4,7 +4,7 @@ use std::path::{Path, PathBuf};
 use hook_inject_build::{download_devkit, resolve_devkit_platform, resolve_devkit_versions};
 
 // === Configuration ===
-const DEFAULT_DEVKIT_VERSION: &str = "17.6.2";
+const DEFAULT_DEVKIT_VERSION: &str = "17.7.3";
 // Explicitly list supported devkit versions to avoid drifting with local installations.
 const SUPPORTED_DEVKIT_VERSIONS: &[&str] = &[DEFAULT_DEVKIT_VERSION];
 
